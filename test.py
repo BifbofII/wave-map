@@ -18,3 +18,6 @@ wave_ql
 
 # %%
 wave_ql.loc['fmi::observations::wave::simple',:].Abstract
+
+# %%
+dl.download_data('fmi::observations::wave::simpl')
