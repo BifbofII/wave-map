@@ -9,4 +9,12 @@ import fmiod
 
 # %%
 dl = fmiod.FmiDownloader()
-dl.get_stored_query_list().head()
+ql = dl.get_stored_query_list()
+ql.head()
+
+# %%
+wave_ql = dl.find_queries('wave')
+wave_ql
+
+# %%
+wave_ql.loc['fmi::observations::wave::simple',:].Abstract

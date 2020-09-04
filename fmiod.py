@@ -27,3 +27,13 @@ class FmiDownloader:
         for key, val in parameters.items():
             url += key + '=' + val + '&'
         return url
+
+    def find_queries(self, search_term, search_in=['Title', 'Abstract'], lower=True):
+        mask = pd.Series(False, index=self.stored_queries.index)
+        for c in search_in:
+            if lower:
+                cont = self.stored_queries[c].str.lower()
+            else:
+                cont = self.stored_queries[c]
+            mask = mask | cont.str.contains(search_term)
+        return self.stored_queries[mask]
