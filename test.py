@@ -5,19 +5,27 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import fmiod
 
 # %%
-dl = fmiod.FmiDownloader()
-ql = dl.get_stored_query_list()
-ql.head()
+from owslib.wfs import WebFeatureService
+wfs = WebFeatureService(url='https://opendata.fmi.fi/wfs', version='2.0.0')
+wfs.identification.title
 
 # %%
-wave_ql = dl.find_queries('wave')
-wave_ql
+[storedquery.title for storedquery in wfs.storedqueries]
 
 # %%
-wave_ql.loc['fmi::observations::wave::simple',:].Abstract
+resp = wfs.getfeature(storedQueryID='fmi::observations::wave::simple')
+with open('data/simple.gml', 'wb') as f:
+    f.write(resp.read())
 
 # %%
-dl.download_data('fmi::observations::wave::simpl')
+resp = wfs.getfeature(storedQueryID='fmi::observations::wave::timevaluepair')
+with open('data/tvp.gml', 'wb') as f:
+    f.write(resp.read())
+
+# %%
+from wfs2df import parse_wfs
+df, met = parse_wfs('data/tvp.gml')
+print(met)
+df.describe()
