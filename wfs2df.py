@@ -1,9 +1,10 @@
 import os.path
 import dateutil.parser
 import pandas as pd
+import geopandas as gpd
 import xml.etree.ElementTree as et
 
-def parse_wfs(in_str):
+def parse_wfs(file_path):
     """
     Parse XML data in GML format of a WFS server to a pandas dataframe
 
@@ -12,21 +13,20 @@ def parse_wfs(in_str):
 
     Currently only parsing of time value pair data is supported.
 
-    :param in_str: either the path to an xml file or a string containing xml data
+    :param file_path: the path to an xml file
     :returns: pandas dataframe containing the data and a dict containing additional metadata
     :raises ValueError: when invalid xml data is given
     """
-    if os.path.isfile(in_str):
-        tree = et.parse(in_str)
-        xml_root = tree.getroot()
-    else:
-        xml_root = et.fromstring(in_str)
+    tree = et.parse(file_path)
+    xml_root = tree.getroot()
 
     if xml_root.tag != '{http://www.opengis.net/wfs/2.0}FeatureCollection':
         raise ValueError('Invalid GML data')
 
     metadata = xml_root.attrib
     del metadata['{http://www.w3.org/2001/XMLSchema-instance}schemaLocation']
+
+    metadata['gpd parse'] = gpd.read_file(file_path)
 
     data = []
     for member in xml_root.iterfind('{http://www.opengis.net/wfs/2.0}member'):
