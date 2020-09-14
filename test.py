@@ -18,6 +18,11 @@ wfs.identification.title
 [p.name for p in wfs.storedqueries[85].parameters]
 
 # %%
+resp = wfs.getfeature(storedQueryID='fmi::ef::stations')
+with open('data/stations.gml', 'wb') as f:
+    f.write(resp.read())
+
+# %%
 resp = wfs.getfeature(storedQueryID='fmi::observations::wave::simple')
 with open('data/simple.gml', 'wb') as f:
     f.write(resp.read())
@@ -34,7 +39,7 @@ with open('data/mpc.gml', 'wb') as f:
 
 # %%
 from wfs2df import parse_wfs
-df, met = parse_wfs('data/tvp.gml')
+df, met = parse_wfs('data/tvp.gml', 'data/stations.gml')
 print(met)
 df.describe()
 
