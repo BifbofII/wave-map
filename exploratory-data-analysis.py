@@ -25,19 +25,23 @@ wave_data.describe()
 station_data
 
 # %%
+# Indexing helpers
 idx = pd.IndexSlice
-wave_height = idx[:, 'WaveHs']
-wave_dir = idx[:, 'ModalWDi']
+wave_height = idx[:, 'Wave height (m)']
+wave_dir = idx[:, 'Direction of waves (deg)']
 
 # %%
+# Plot wave height
 wave_data.loc[:,wave_height].plot()
 plt.show()
 
 # %%
+# Plot one month of wave height
 wave_data.loc['2020-01',wave_height].plot()
 plt.gca().set_xlim('2020-01-01', '2020-02-01')
 plt.show()
 
 # %%
+# Plot missing values
 sns.heatmap(wave_data.loc[:,wave_height].isnull().values)
 plt.show()

@@ -12,8 +12,10 @@ from owslib.wfs import WebFeatureService
 from wfs2df import parse_wfs
 
 # %% [markdown]
-# ## Wave Data
+# ## Wave Data - Open Data Interface
 # Download wave height and direction data from the FMI Open Data service, clean it up and save as CSV files.
+# 
+# Unfortunitely the open data interface seems to report a huge number of missing values.
 
 # %%
 def download_long_time_interval(wfs, query, start, end=datetime.datetime.now(), params=None):
@@ -74,5 +76,32 @@ data, stations = download_long_time_interval(fmi_wfs, stored_query_id, start=sta
 data.describe()
 
 # %%
+data.to_csv('data/wave_data_od.csv')
+stations.to_csv('data/wave_stations_od.csv')
+ 
+# %% [markdown]
+# ## Wave Data - Downloaded CSV Files
+# The FMI does also provide a interface for downloading data as CSV files.
+# We downloaded data for wave height and direction from there from 01.01.2019 - 14.09.2020, this data is joined here and exported as a combined CSV File.
+
+# %%
+buoys = ['helsinki-suomenlinna', 'peraemeri', 'pohjois-itaemeri', 'selkaemeri', 'suomenlahti']
+data = []
+meta = []
+for buoy in buoys:
+    buoy_data = pd.read_csv('data/fmi-download/' + buoy + '.csv')
+    buoy_meta = pd.read_csv('data/fmi-download/' + buoy + '-meta.csv')
+    buoy_data['datetime'] = pd.to_datetime(buoy_data['Year'].astype(str) + '-' + buoy_data['m'].astype(str) + '-' + buoy_data['d'].astype(str) + 'T' + buoy_data['Time'])
+    buoy_data = buoy_data.set_index('datetime')
+    buoy_data = buoy_data.drop(['Year', 'm', 'd', 'Time', 'Time zone'], axis=1)
+    buoy_data.columns = pd.MultiIndex.from_tuples([(buoy, c) for c in buoy_data.columns])
+    buoy_data.columns.names = ['buoy', 'parameter']
+    data.append(buoy_data)
+    meta.append(buoy_meta)
+data = pd.concat(data)
+meta = pd.concat(meta)
+meta.set_index('Station ID')
+
+# %%
 data.to_csv('data/wave_data.csv')
-stations.to_csv('data/wave_stations.csv')
+meta.to_csv('data/wave_stations.csv')
