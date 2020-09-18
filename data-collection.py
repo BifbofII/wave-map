@@ -98,9 +98,11 @@ for buoy in buoys:
     buoy_data.columns.names = ['buoy', 'parameter']
     data.append(buoy_data)
     meta.append(buoy_meta)
-data = pd.concat(data)
+data = pd.concat(data, axis=1)
 meta = pd.concat(meta)
 meta.set_index('Station ID')
+# sort index
+data = data.sort_index()
 
 # %%
 data.to_csv('data/wave_data.csv')
