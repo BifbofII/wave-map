@@ -100,7 +100,7 @@ for buoy in buoys:
     meta.append(buoy_meta)
 data = pd.concat(data, axis=1)
 meta = pd.concat(meta)
-meta.set_index('Station ID')
+meta = meta.set_index('Station ID')
 # sort index
 data = data.sort_index()
 
