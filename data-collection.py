@@ -5,6 +5,8 @@
 import datetime
 import tempfile
 
+import pygrib
+import numpy as np
 import pandas as pd
 from functools import reduce
 
@@ -108,3 +110,50 @@ data = data.sort_index()
 # %%
 data.to_csv('data/wave_data.csv')
 meta.to_csv('data/wave_stations.csv')
+
+# %% [markdown]
+# ## Weather Data - Downloaded Grib File
+# Extract the weather information corresponding to the buoys from the grib file downloaded from Copernicus.
+
+# %%
+grbs = pygrib.open('data/weather_data.grib')
+
+# %%
+stations = pd.read_csv('data/wave_stations.csv', index_col=0)
+
+# %%
+ex_msg = grbs.message(1)
+lat, lon = ex_msg.latlons()
+lats = lat[:,0].flatten()
+lons = lon[0,:].flatten()
+
+# %%
+# Find closest point in grib file to buoys
+stations['lat_ind'] = -1
+stations['lon_ind'] = -1
+
+for ind, buoy in stations.iterrows():
+    lat_diff = np.abs(lats - buoy['Latitude (decimals)'])
+    lon_diff = np.abs(lons - buoy['Longitude (decimals)'])
+    stations.loc[ind, 'lat_ind'] = np.argmin(lat_diff)
+    stations.loc[ind, 'lon_ind'] = np.argmin(lon_diff)
+
+# %%
+weather_params = ['10u', '10v', '2t', 'sp']
+
+data = dict()
+for param in weather_params:
+    param_grbs = grbs.select(shortName=param)
+    index = [datetime.datetime(grb.year, grb.month, grb.day, grb.hour) for grb in param_grbs]
+    for _, buoy in stations.iterrows():
+        data[(buoy['location'],param)] = pd.Series(index=index,
+            data=[grb.values[buoy['lat_ind'],buoy['lon_ind']] for grb in param_grbs], name=param)
+
+data = pd.DataFrame(data)
+data.columns.names = ['buoy', 'parameter']
+
+# %%
+data.to_csv('data/weather_data.csv')
+
+# %%
+grbs.close()

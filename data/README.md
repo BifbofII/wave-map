@@ -14,3 +14,7 @@ The data contains information about the wave height and direction at the five bu
 ## Weather Data
 The `weather_data.grib` file was downloaded from [Copernicus](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form) and contains wind speed and direction, temperature (2m) and surface pressure data for the are from 16-34 degrees longitude and 59-66 degrees latitude.
 The data is hourly for a timeframe of 01.01.2019 to the 16.09.2020.
+
+### Subset of Weather Data at Buoy Locations
+The `weather_data.csv` file contains weather data at the buoy locations.
+This data was extracted from the Grib file.

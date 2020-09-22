@@ -112,3 +112,9 @@ fig.show()
 
 # %%
 grbs.close()
+
+# %% [markdown]
+# ### Weather Subset for Buoys
+
+# %%
+weather_data = pd.read_csv('data/weather_data.csv', header=[0,1], index_col=0, parse_dates=True)
