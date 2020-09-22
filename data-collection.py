@@ -96,6 +96,7 @@ for buoy in buoys:
     buoy_data = buoy_data.drop(['Year', 'm', 'd', 'Time', 'Time zone'], axis=1)
     buoy_data.columns = pd.MultiIndex.from_tuples([(buoy, c) for c in buoy_data.columns])
     buoy_data.columns.names = ['buoy', 'parameter']
+    buoy_meta['location'] = buoy
     data.append(buoy_data)
     meta.append(buoy_meta)
 data = pd.concat(data, axis=1)
