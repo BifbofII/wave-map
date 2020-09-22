@@ -4,8 +4,11 @@
 # %%
 import numpy as np
 import pandas as pd
+import pygrib
+import geopandas as gpd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 pd.options.plotting.backend = 'plotly'
@@ -81,3 +84,31 @@ fig = go.Figure(data=go.Heatmap(x=x, y=y, z=z, colorscale=colorsc,
     colorbar=dict(tickmode='array', tickvals=[0,1], ticktext=['null', 'value'])))
 fig.update_layout(title='Missing values over time', xaxis=dict(side='top'))
 fig.show()
+
+# %% [markdown]
+# ## Weather Data
+
+# %%
+grbs = pygrib.open('data/weather_data.grib')
+
+# %%
+# Plot wind data on map
+u_msg = grbs.select(shortName='10u')[0]
+v_msg = grbs.select(shortName='10v')[0]
+x, y = u_msg.latlons()
+u = u_msg.values
+v = v_msg.values
+
+quiver_obj = plotly.figure_factory._quiver._Quiver(x, y, u, v,
+    scale=.03, arrow_scale=0.3, angle=np.pi/9)
+barb_x, barb_y = quiver_obj.get_barbs()
+arrow_x, arrow_y = quiver_obj.get_quiver_arrows()
+
+fig = go.Figure(data=go.Scattermapbox(lat=barb_x+arrow_x, lon=barb_y+arrow_y, mode='lines'))
+fig.update_layout(title='Wind direction', mapbox_style='open-street-map',
+    mapbox=dict(zoom=4, center=dict(lat=x.mean(), lon=y.mean())),
+    margin=dict(l=0, r=0, t=50, b=0))
+fig.show()
+
+# %%
+grbs.close()
