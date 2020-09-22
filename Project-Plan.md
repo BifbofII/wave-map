@@ -3,8 +3,8 @@
 ## ToDo
 
 * [x] Download wave data
-* [ ] Download weather data
-  * [ ] Check format
+* [x] Download weather data
+  * [x] Check format
 * [ ] Build model
   * [ ] Decide on model
 * [ ] Visualize data
@@ -47,6 +47,8 @@ Start with simple models and try to improve them. From LR with current weather d
 Map of coast of Finland with Buoy locations marked, wave height as colour and wave direction as arrows. Alpha mask around the buoys to indicate decreasing accuracy of the model.
 
 [Windy.com](https://api.windy.com/map-forecast) seems to have an API for visualizing data on a map. (Probably the free version isn't of much use)
+
+[Plotly](https://plotly.com) provides [map layers](https://plotly.com/python/mapbox-layers/) e.g. from open street maps where plots can be created on.
 
 ## Timeline
 
