@@ -18,6 +18,21 @@ conda activate wave-map
 conda install -n wave-map --file requirements.txt
 ```
 
+### Data Download
+
+To download some data files that are in the `data` directory, Git LFS is needed.
+It can be setup according to this [Guide](https://git-lfs.github.com/).
+After installing Git LFS on a system, it needs to be initialized in the repository.
+This is done with the following command:
+```
+git lfs install
+```
+
+If everything is set up, the data files can be downloaded with:
+```
+git lfs pull
+```
+
 ## Project Proposal
 
 ### Pitch
