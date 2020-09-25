@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, RidgeCV
 from sklearn.pipeline import Pipeline
 
 pd.options.plotting.backend = 'plotly'
@@ -25,7 +25,7 @@ data = pd.concat([wave_data, weather_data], axis=1, join='inner')
 # %%
 # Add lagging values
 lagging_vars = ['10u', '10v', '2t', 'sp']
-lagging_times = [datetime.timedelta(hours=h) for h in range(1, 4)]
+lagging_times = [datetime.timedelta(hours=h) for h in range(1, 10)]
 dat = [data]
 for var in lagging_vars:
     for i, t in enumerate(lagging_times):
@@ -120,6 +120,7 @@ describe_regression(pipe, input_vars, output_vars)
 # * 10v
 # * 2t
 # * sp
+# * repeating from '_lag1' to '_lag3'
 #
 #
 # Outputs:
@@ -130,8 +131,8 @@ describe_regression(pipe, input_vars, output_vars)
 # Build input and output matrices
 base_vars = ['10u', '10v', '2t', 'sp']
 input_vars = base_vars.copy()
-for l in range(3):
-    input_vars.extend([v + '_lag' + str(l+1) for v in base_vars])
+for l in range(1, 4):
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
 input_vars.sort()
 output_vars = ['wave_u', 'wave_v']
 
@@ -167,3 +168,127 @@ describe_regression(pipe, input_vars, output_vars)
 # %% [markdown]
 # The regression model with lagging input variables shows increased accuracy.
 # The largest influence on the model comes from the variables lagging the most, therefore longer lagging variables should be included.
+
+# %% [markdown]
+# ## Linear Regression with even older inputs
+# Linear regression from Wind Vector, Temperature and Pressure to Wave Vector.
+# Each input variable is used nine times, once with the current value, once lagging one hour and so on.
+# The goal here is to see how old the variables with the strongest correlation are.
+#
+# Inputs:
+# * 10u
+# * 10v
+# * 2t
+# * sp
+# * repeating from '_lag1' to '_lag9'
+#
+#
+# Outputs:
+# * wave_u
+# * wave_v
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', '2t', 'sp']
+input_vars = base_vars.copy()
+for l in range(1, 10):
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u', 'wave_v']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', LinearRegression())])
+pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+
+# %%
+# Model coefficiens
+describe_regression(pipe, input_vars, output_vars)
+
+# %% [markdown]
+# The model yields basically the same accuracy as when using less lagging variables.
+# Of the lagging variables again, the oldest is the one with the strongest correlation.
+# It is not clear from this result how much lag should be included.
+#
+# Next we try introducing regularization.
+
+# %% [markdown]
+# ## Ridge Regression
+# Ridge regression from Wind Vector, Temperature and Pressure to Wave Vector.
+# Each input variable is used nine times, once with the current value, once lagging one hour and so on.
+# The goal here is to see how old the variables with the strongest correlation are.
+#
+# Inputs:
+# * 10u
+# * 10v
+# * 2t
+# * sp
+# * repeating from '_lag1' to '_lag9'
+#
+#
+# Outputs:
+# * wave_u
+# * wave_v
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', '2t', 'sp']
+input_vars = base_vars.copy()
+for l in range(1, 10):
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u', 'wave_v']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+alphas = np.logspace(-2, 5, num=20)
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', RidgeCV())])
+pipe.fit(X_train, Y_train)
+print('Chosen regularization parameter: alpha={:.3f}'.format(pipe.named_steps['regression'].alpha_))
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+
+# %%
+# Model coefficiens
+describe_regression(pipe, input_vars, output_vars)
+
+# %% [markdown]
+# The regularization does not seem to influence the performance much.
