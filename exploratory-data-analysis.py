@@ -137,9 +137,8 @@ fig.show()
 # Combine data of one buoy
 suomenlahti = pd.concat(
     [wind_speed['suomenlahti'], wind_dir['suomenlahti'],
-    wave_height['suomenlahti'], wave_dir['suomenlahti']], axis=1)
+    wave_height['suomenlahti'], wave_dir['suomenlahti']], axis=1, join='inner')
 suomenlahti.columns = ['wind_speed', 'wind_dir', 'wave_height', 'wave_dir']
-suomenlahti = suomenlahti.drop(suomenlahti[suomenlahti['wind_speed'].isnull()].index)
 
 # %%
 # Plot wind speed and wave height of one buoy
