@@ -11,6 +11,7 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+from plotly.subplots import make_subplots
 pd.options.plotting.backend = 'plotly'
 
 # %% [markdown]
@@ -36,9 +37,9 @@ station_data
 
 # %%
 # Divide wave height and direction
-wave_height = wave_data.iloc[:,1::2]
+wave_height = wave_data.loc[:,(slice(None),'Wave height (m)')]
 wave_height.columns = wave_height.columns.droplevel(1)
-wave_dir = wave_data.iloc[:,::2]
+wave_dir = wave_data.loc[:,(slice(None),'Direction of waves (deg)')]
 wave_dir.columns = wave_dir.columns.droplevel(1)
 
 # %%
@@ -118,3 +119,51 @@ grbs.close()
 
 # %%
 weather_data = pd.read_csv('data/weather_data.csv', header=[0,1], index_col=0, parse_dates=True)
+
+# %%
+# Divide wind speed and direction
+wind_speed = weather_data.loc[:,(slice(None),'wind_speed')]
+wind_speed.columns = wind_speed.columns.droplevel(1)
+wind_dir = weather_data.loc[:,(slice(None),'direction')]
+wind_dir.columns = wind_dir.columns.droplevel(1)
+
+# %%
+# Plot wind speed
+fig = wind_speed.plot()
+fig.update_layout(title='Wind speed')
+fig.show()
+
+# %%
+# Combine data of one buoy
+suomenlahti = pd.concat(
+    [wind_speed['suomenlahti'], wind_dir['suomenlahti'],
+    wave_height['suomenlahti'], wave_dir['suomenlahti']], axis=1)
+suomenlahti.columns = ['wind_speed', 'wind_dir', 'wave_height', 'wave_dir']
+suomenlahti = suomenlahti.drop(suomenlahti[suomenlahti['wind_speed'].isnull()].index)
+
+# %%
+# Plot wind speed and wave height of one buoy
+fig = make_subplots(specs=[[{"secondary_y": True}]])
+fig.add_trace(
+    go.Scatter(x=suomenlahti.index, y=suomenlahti['wind_speed'], name='wind speed'),
+    secondary_y=False,
+)
+fig.add_trace(
+    go.Scatter(x=suomenlahti.index, y=suomenlahti['wave_height'], name='wave height'),
+    secondary_y=True,
+)
+fig.update_layout(title='Wind speed and wave height')
+fig.show()
+
+# %% [markdown]
+# A strong correlation between the wind speed and the wave height can be seen.
+# The correlation seems to be delayed at most by a few hours.
+
+# %%
+# Plot wind direction and wave direction of one buoy
+fig = suomenlahti[['wind_dir', 'wave_dir']].plot()
+fig.update_layout(title='Wind and wave direction')
+fig.show()
+
+# %% [markdown]
+# Wave and wind direction does also seem to be strongly correlated.
