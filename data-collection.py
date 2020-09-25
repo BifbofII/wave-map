@@ -108,6 +108,18 @@ meta = meta.set_index('Station ID')
 data = data.sort_index()
 
 # %%
+# Compute wave data as vector (u/v)
+# http://colaweb.gmu.edu/dev/clim301/lectures/wind/wind-uv
+u = -np.sin(np.radians(data.loc[:,(slice(None),'Direction of waves (deg)')].values)) \
+    * data.loc[:,(slice(None),'Wave height (m)')].values
+v = -np.cos(np.radians(data.loc[:,(slice(None),'Direction of waves (deg)')].values)) \
+    * data.loc[:,(slice(None),'Wave height (m)')].values
+cols = [(buoy, param) for param in ['wave_u', 'wave_v'] for buoy in buoys]
+uv_df = pd.DataFrame(np.concatenate([u,v], axis=1), index=data.index,
+    columns=pd.MultiIndex.from_tuples(cols))
+data = pd.concat([data, uv_df], axis=1)
+
+# %%
 data.to_csv('data/wave_data.csv')
 meta.to_csv('data/wave_stations.csv')
 
@@ -151,6 +163,21 @@ for param in weather_params:
 
 data = pd.DataFrame(data)
 data.columns.names = ['buoy', 'parameter']
+
+# %%
+# Compute wind data as speed and direction
+# http://colaweb.gmu.edu/dev/clim301/lectures/wind/wind-uv
+ws = np.sqrt(data.loc[:,(slice(None),'10u')].values**2 + data.loc[:,(slice(None),'10v')].values**2)
+d = np.degrees(np.arctan2(data.loc[:,(slice(None),'10u')].values,
+    data.loc[:,(slice(None),'10v')].values)) + 180
+cols = [(buoy, param) for param in ['wind_speed', 'direction'] for buoy in buoys]
+wsd_df = pd.DataFrame(np.concatenate([ws,d], axis=1), index=data.index,
+    columns=pd.MultiIndex.from_tuples(cols))
+data = pd.concat([data, wsd_df], axis=1)
+
+# %%
+# Example data point
+data.loc['2020-07-01 11:00', 'helsinki-suomenlinna']
 
 # %%
 data.to_csv('data/weather_data.csv')
