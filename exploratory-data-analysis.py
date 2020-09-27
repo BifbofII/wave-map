@@ -166,3 +166,8 @@ fig.show()
 
 # %% [markdown]
 # Wave and wind direction does also seem to be strongly correlated.
+
+# %%
+# Plot wave height vs. wind speed
+fig = suomenlahti.plot(x='wind_speed', y='wave_height', kind='scatter')
+fig.show()
