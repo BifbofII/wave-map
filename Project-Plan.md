@@ -50,6 +50,14 @@ Map of coast of Finland with Buoy locations marked, wave height as colour and wa
 
 [Plotly](https://plotly.com) provides [map layers](https://plotly.com/python/mapbox-layers/) e.g. from open street maps where plots can be created on.
 
+#### Interface to the Visualization
+
+The visualization component will be passed three parameters:
+
+* `lat`: a 1D numpy array of `n` latitude values.
+* `lon`: a 1D numpy array of `m` longitude values.
+* `dat`: a 3D numpy array of `nxmx2` data values. The third dimension is the `u` and `v` components of the vectors.
+
 ## Timeline
 
 * Week 38: Finish data collection
