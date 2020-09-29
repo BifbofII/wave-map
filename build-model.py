@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression, RidgeCV
+from sklearn.linear_model import LinearRegression, RidgeCV, MultiTaskLassoCV
 from sklearn.pipeline import Pipeline
 
 pd.options.plotting.backend = 'plotly'
@@ -25,7 +25,7 @@ data = pd.concat([wave_data, weather_data], axis=1, join='inner')
 # %%
 # Add lagging values
 lagging_vars = ['10u', '10v', '2t', 'sp']
-lagging_times = [datetime.timedelta(hours=h) for h in range(1, 10)]
+lagging_times = [datetime.timedelta(hours=h) for h in range(1, 20)]
 dat = [data]
 for var in lagging_vars:
     for i, t in enumerate(lagging_times):
@@ -49,7 +49,7 @@ def describe_regression(pipe, coef_desc, target_desc):
 
 # %%
 num_buoys = data.columns.levshape[0]
-test_buoy = data.columns.get_level_values(0)[np.random.randint(0, num_buoys)]
+test_buoy = 'pohjois-itaemeri'
 
 # %%
 test = data[test_buoy]
