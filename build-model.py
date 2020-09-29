@@ -9,6 +9,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, RidgeCV, MultiTaskLassoCV
 from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVR
+from sklearn.model_selection import GridSearchCV
 
 pd.options.plotting.backend = 'plotly'
 np.random.seed(42)
@@ -611,3 +613,70 @@ print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
 # %%
 # Model coefficiens
 describe_regression(pipe, input_vars, output_vars)
+
+# %% [markdown]
+# Including the wind speed and the squared wind speed does improve the performance.
+
+# %% [markdown]
+# ## Support Vector Machine
+# Support vector regression from Wind Vector, Wind Speed and Wind Speed Squared
+# Lag for 2 hours and 4 hours.
+#
+# Inputs:
+# * 10u
+# * 10v
+# * wind_speed
+# * wind_speed_sq
+# * 10u_lag2
+# * 10v_lag2
+# * wind_speed_lag2
+# * wind_speed_sq_lag2
+# * 10u_lag4
+# * 10v_lag4
+# * wind_speed_lag4
+# * wind_speed_sq_lag4
+#
+#
+# Outputs:
+# * wave_u
+# * wave_v
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u', 'wave_v']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe_u = Pipeline([('scaler', StandardScaler()), ('regression', LinearSVR())])
+pipe_v = Pipeline([('scaler', StandardScaler()), ('regression', LinearSVR())])
+pipe_u.fit(X_train, Y_train[:,0])
+pipe_v.fit(X_train, Y_train[:,1])
+print('Chosen regularization parameter (u): C={:.3f}'.format(pipe_u.named_steps['regression'].C))
+print('Chosen regularization parameter (v): C={:.3f}'.format(pipe_v.named_steps['regression'].C))
+print('Train accuracy of the model (u): {:.3f}'.format(pipe_u.score(X_train, Y_train[:,0])))
+print('Train accuracy of the model (v): {:.3f}'.format(pipe_v.score(X_train, Y_train[:,1])))
+
+# %%
+# Test model
+print('Test accuracy of the model (u): {:.3f}'.format(pipe_u.score(X_test, Y_test[:,0])))
+print('Test accuracy of the model (v): {:.3f}'.format(pipe_v.score(X_test, Y_test[:,1])))
