@@ -183,4 +183,21 @@ data.loc['2020-07-01 11:00', 'helsinki-suomenlinna']
 data.to_csv('data/weather_data.csv')
 
 # %%
+u_msg = grbs.select(shortName='10u')[0]
+v_msg = grbs.select(shortName='10v')[0]
+x, y = u_msg.latlons()
+u = u_msg.values
+v = v_msg.values
+
+# %%
+lat = x[:,0]
+lon = y[0,:]
+dat = np.concatenate([u[:,:,np.newaxis], v[:,:,np.newaxis]], axis=2)
+
+# %%
+np.save('data/visualization_example/lat.npy', lat)
+np.save('data/visualization_example/lon.npy', lon)
+np.save('data/visualization_example/wind_dat.npy', dat)
+
+# %%
 grbs.close()

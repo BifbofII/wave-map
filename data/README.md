@@ -18,3 +18,12 @@ The data is hourly for a timeframe of 01.01.2019 to the 16.09.2020.
 ### Subset of Weather Data at Buoy Locations
 The `weather_data.csv` file contains weather data at the buoy locations.
 This data was extracted from the Grib file.
+
+## Visualization Example Data
+As dummy data for working on the visualization, the data in the `visualization_example` folder can be used.
+It can be loaded in the following way:
+```
+lat = np.load('data/visualization_example/lat.npy')
+lon = np.load('data/visualization_example/lon.npy')
+dat = np.load('data/visualization_example/wind_dat.npy')
+```
