@@ -171,3 +171,8 @@ fig.show()
 # Plot wave height vs. wind speed
 fig = suomenlahti.plot(x='wind_speed', y='wave_height', kind='scatter')
 fig.show()
+
+# %%
+# Plot wave height vs. wind speed
+fig = suomenlahti.plot(x='wind_dir', y='wave_dir', kind='scatter')
+fig.show()
