@@ -6,6 +6,8 @@ import datetime
 import numpy as np
 import pandas as pd
 
+import plotly.express as px
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, RidgeCV, MultiTaskLassoCV
 from sklearn.kernel_ridge import KernelRidge
@@ -51,6 +53,16 @@ def describe_regression(pipe, coef_desc, target_desc):
     return pd.DataFrame(
         np.append(model.coef_, model.intercept_[:,np.newaxis], axis=1).T,
         index=np.append(coef_desc, 'intercept'), columns=target_desc)
+
+# %%
+# Another helper function
+def plot_prediction(pipe, X, y, func=lambda x: x.flatten()):
+    y_pred = pipe.predict(X)
+    fig = px.scatter(x=func(y), y=func(y_pred))
+    fig.update_layout(title='Prediction vs true value')
+    fig.update_xaxes(title='true value')
+    fig.update_yaxes(title='prediction')
+    fig.show()
 
 # %% [markdown]
 # ## Train Test Split
@@ -549,7 +561,6 @@ print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
 
 # %%
 # Model coefficiens
-<<<<<<< Updated upstream
 describe_regression(pipe, input_vars, output_vars)
 
 # %% [markdown]
@@ -611,6 +622,7 @@ print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train))
 # %%
 # Test model
 print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test, func=lambda x: np.sqrt(np.sum(x**2, axis=1)))
 
 # %%
 # Model coefficiens
@@ -752,3 +764,67 @@ print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train))
 # %%
 # Test model
 print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+
+# %% [markdown]
+# ## Ridge Regression - Wave height only
+# The correlation between speed and height seems to be stronger than the direction correlation.
+# Try predicting the height independently of the direction.
+#
+# Inputs:
+# * 10u
+# * 10v
+# * wind_speed
+# * wind_speed_sq
+# * 10u_lag2
+# * 10v_lag2
+# * wind_speed_lag2
+# * wind_speed_sq_lag2
+# * 10u_lag4
+# * 10v_lag4
+# * wind_speed_lag4
+# * wind_speed_sq_lag4
+#
+#
+# Outputs:
+# * wave_u
+# * wave_v
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['Wave height (m)']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+alphas = np.logspace(-2, 5, num=20)
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', RidgeCV())])
+pipe.fit(X_train, Y_train)
+print('Chosen regularization parameter: alpha={:.3f}'.format(pipe.named_steps['regression'].alpha_))
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test)
+
+# %%
+describe_regression(pipe, input_vars, output_vars)
