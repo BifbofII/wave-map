@@ -25,7 +25,7 @@ The Grib file can now be downloaded from [here](https://jabsserver.net/downloads
 
 ```
 curl https://jabsserver.net/downloads/weather_data.grib > data/weather_data.grib
-wget --show-progress -o=data/weather_data.grib https://jabsserver.net/downloads/weather_data.grib
+wget --show-progress -P data https://jabsserver.net/downloads/weather_data.grib
 ```
 
 ## Project Proposal
