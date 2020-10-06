@@ -194,7 +194,7 @@ class JoinedWaveModel(WavePredictor):
         dir, _, _, _ = self.dir_model.predict(location, time)
 
         # Scale factor for u and v components to include predicted wave height
-        scale_factor = height / np.sqrt(np.sum(dir**2, axis=1))
+        scale_factor = height / np.sqrt(np.sum(dir**2, axis=len(dir.shape)-1))
 
         # Calc returns
         dir = dir * np.concatenate(
@@ -207,5 +207,5 @@ class JoinedWaveModel(WavePredictor):
 # Main for debugging
 if __name__ == '__main__':
     wm = JoinedWaveModel('models/wave-height-model.pkl', 'models/wave-dir-model.pkl', 'data/weather_data.grib')
-    print(wm.predict(location=(60.123,24.972),
+    print(wm.predict(
         time=[datetime.datetime(2019, 2, 15, 6), datetime.datetime(2019, 2, 15, 10)]))
