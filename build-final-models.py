@@ -60,6 +60,7 @@ import plotly.express as px
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import r2_score
 
 np.random.seed(42)
 
@@ -155,22 +156,22 @@ for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
 
 # %%
 # Train model
-pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
-pipe.fit(X_train, Y_train)
-print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+height_pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+height_pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(height_pipe.score(X_train, Y_train)))
 
 # %%
 # Test model
-print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
-plot_prediction(pipe, X_test, Y_test)
+print('Test accuracy of the model: {:.3f}'.format(height_pipe.score(X_test, Y_test)))
+plot_prediction(height_pipe, X_test, Y_test)
 
 # %%
-describe_regression(pipe, input_vars, output_vars)
+describe_regression(height_pipe, input_vars, output_vars)
 
 # %%
 # Save model
 with open('models/wave-height-model.pkl', 'wb') as f:
-    pickle.dump(pipe, f)
+    pickle.dump(height_pipe, f)
 
 # %% [markdown]
 # ## Wave Direction Models
@@ -201,22 +202,22 @@ for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
 
 # %%
 # Train model
-pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
-pipe.fit(X_train, Y_train)
-print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+u_pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+u_pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(u_pipe.score(X_train, Y_train)))
 
 # %%
 # Test model
-print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
-plot_prediction(pipe, X_test, Y_test)
+print('Test accuracy of the model: {:.3f}'.format(u_pipe.score(X_test, Y_test)))
+plot_prediction(u_pipe, X_test, Y_test)
 
 # %%
-describe_regression(pipe, input_vars, output_vars)
+describe_regression(u_pipe, input_vars, output_vars)
 
 # %%
 # Save model
 with open('models/wave-u-model.pkl', 'wb') as f:
-    pickle.dump(pipe, f)
+    pickle.dump(u_pipe, f)
 
 # %%
 # Build input and output matrices
@@ -244,19 +245,57 @@ for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
 
 # %%
 # Train model
-pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
-pipe.fit(X_train, Y_train)
-print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+v_pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+v_pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(v_pipe.score(X_train, Y_train)))
 
 # %%
 # Test model
-print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
-plot_prediction(pipe, X_test, Y_test)
+print('Test accuracy of the model: {:.3f}'.format(v_pipe.score(X_test, Y_test)))
+plot_prediction(v_pipe, X_test, Y_test)
 
 # %%
-describe_regression(pipe, input_vars, output_vars)
+describe_regression(v_pipe, input_vars, output_vars)
 
 # %%
 # Save model
 with open('models/wave-v-model.pkl', 'wb') as f:
-    pickle.dump(pipe, f)
+    pickle.dump(v_pipe, f)
+
+# %% [markdown]
+# ## Test Performance of Combined Model
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u', 'wave_v']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+# %%
+# Combine predictions
+height = height_pipe.predict(X_test)
+u = u_pipe.predict(X_test)
+v = v_pipe.predict(X_test)
+
+scale_factor = height * np.sqrt(u**2 + v**2)
+u = u * scale_factor
+v = v * scale_factor
+
+pred = np.concatenate([u[:,np.newaxis], v[:,np.newaxis]], axis=1)
+
+# %%
+# Test performance
+print('Test accuracy of the combined models: {:.3f}'.format(r2_score(Y_test, pred)))
+
+fig = px.scatter(x=np.sqrt(np.sum(Y_test**2, axis=1)), y=np.sqrt(np.sum(pred**2, axis=1)))
+fig.update_layout(title='Prediction vs true value')
+fig.update_xaxes(title='true value')
+fig.update_yaxes(title='prediction')
+fig.show()
