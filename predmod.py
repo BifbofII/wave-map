@@ -27,7 +27,8 @@ class WavePredictor(ABC):
 
     def __del__(self):
         """Destructor closing the grib file"""
-        self.grib_data.close()
+        if self.grib_data is not None:
+            self.grib_data.close()
 
     @cached
     def extract_grib_data(self, location, time, short_names=None):
@@ -48,7 +49,10 @@ class WavePredictor(ABC):
             times = np.unique([datetime.datetime(grb.year, grb.month, grb.day, grb.hour) for grb in self.grib_data])
             self.grib_data.seek(0)
         else:
-            times = np.array([time])
+            if type(time) is list or type(time) is np.array:
+                times = time
+            else:
+                times = np.array([time])
 
         if short_names is None:
             short_names = np.unique([grb.shortName for grb in self.grib_data])
@@ -70,7 +74,8 @@ class WavePredictor(ABC):
             series = []
             for t in times:
                 try:
-                    grb = self.grib_data.select(shortName=p, year=t.year, month=t.month, day=t.day, hour=t.hour)[0]
+                    grb = self.grib_data.select(shortName=p,
+                        year=t.year, month=t.month, day=t.day, hour=t.hour)[0]
                 except IndexError:
                     raise ValueError('The time or parameter was not found in the grib file')
                 if location is None:
@@ -99,19 +104,38 @@ class WavePredictor(ABC):
         pass
 
 
-class SGDWaveModel(WavePredictor):
-    """A wrapper for a SGDRegressor wave model"""
+class WindWaveModel(WavePredictor):
+    """
+    A wrapper for a wave model with the following inputs:
+    
+    * 10u
+    * 10v
+    * wind_speed
+    * wind_speed_sq
+    * 10u_lag2
+    * 10v_lag2
+    * wind_speed_lag2
+    * wind_speed_sq_lag2
+    * 10u_lag4
+    * 10v_lag4
+    * wind_speed_lag4
+    * wind_speed_sq_lag4
+    """
 
     def predict(self, location=None, time=None):
+        if time is not None and type(time) is not list and type(time) is not np.array:
+            time = [time]
         # Load data
         now, lats, lons, times = self.extract_grib_data(location=location, time=time, short_names=['10u', '10v'])
         now = now.copy()
-        lag_2, _, _, _ = self.extract_grib_data(location=location, time=time-datetime.timedelta(hours=2),
+        lag_2, _, _, _ = self.extract_grib_data(location=location,
+            time=[t-datetime.timedelta(hours=2) for t in time],
             short_names=['10u', '10v'])
         lag_2 = lag_2.copy()
         lag_2.index = lag_2.index + datetime.timedelta(hours=2)
         lag_2.columns = [c + '_lag2' for c in lag_2.columns]
-        lag_4, _, _, _ = self.extract_grib_data(location=location, time=time-datetime.timedelta(hours=4),
+        lag_4, _, _, _ = self.extract_grib_data(location=location,
+            time=[t-datetime.timedelta(hours=4) for t in time],
             short_names=['10u', '10v'])
         lag_4 = lag_4.copy()
         lag_4.index = lag_4.index + datetime.timedelta(hours=4)
@@ -147,43 +171,41 @@ class SGDWaveModel(WavePredictor):
             return pred, lats, lons, times
         else:
             X = data[input_vars].values
-            return self.model.predict(X).T, lats, lons, times
+            return self.model.predict(X), lats, lons, times
 
 
 class JoinedWaveModel(WavePredictor):
     """A model joining the wave height and direction prediction"""
 
-    def __init__(self, height_model, u_model, v_model, grib_data):
+    def __init__(self, height_model, dir_model, grib_data):
         """Initialize the predictor by loading all models and the grib data"""
         super().__init__(height_model, grib_data)
         del self.model
 
-        self.height_model = SGDWaveModel(height_model)
+        self.height_model = WindWaveModel(height_model)
         self.height_model.extract_grib_data = self.extract_grib_data
 
-        self.u_model = SGDWaveModel(u_model)
-        self.u_model.extract_grib_data = self.extract_grib_data
-
-        self.v_model = SGDWaveModel(v_model)
-        self.v_model.extract_grib_data = self.extract_grib_data
+        self.dir_model = WindWaveModel(dir_model)
+        self.dir_model.extract_grib_data = self.extract_grib_data
 
     def predict(self, location=None, time=None):
         # Get predictions of different models
         height, lats, lons, times = self.height_model.predict(location, time)
-        u, _, _, _ = self.u_model.predict(location, time)
-        v, _, _, _ = self.v_model.predict(location, time)
+        dir, _, _, _ = self.dir_model.predict(location, time)
 
         # Scale factor for u and v components to include predicted wave height
-        scale_factor = height * np.sqrt(u**2 + v**2)
+        scale_factor = height / np.sqrt(np.sum(dir**2, axis=1))
 
         # Calc returns
-        u = u * scale_factor
-        v = v * scale_factor
-        res = np.concatenate([np.expand_dims(u, len(u.shape)), np.expand_dims(v, len(v.shape))], axis=len(u.shape)-1)
+        dir = dir * np.concatenate(
+            [np.expand_dims(scale_factor, len(scale_factor.shape)),
+            np.expand_dims(scale_factor, len(scale_factor.shape))],
+            axis=len(scale_factor.shape))
 
-        return res, lats, lons, times
+        return dir, lats, lons, times
 
 # Main for debugging
 if __name__ == '__main__':
-    wm = JoinedWaveModel('models/wave-height-model.pkl', 'models/wave-u-model.pkl', 'models/wave-v-model.pkl', 'data/weather_data.grib')
-    print(wm.predict(location=(60.123,24.972), time=datetime.datetime(2019, 2, 15, 6)))
+    wm = JoinedWaveModel('models/wave-height-model.pkl', 'models/wave-dir-model.pkl', 'data/weather_data.grib')
+    print(wm.predict(location=(60.123,24.972),
+        time=[datetime.datetime(2019, 2, 15, 6), datetime.datetime(2019, 2, 15, 10)]))
