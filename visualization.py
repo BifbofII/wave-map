@@ -10,11 +10,13 @@ buoy_data = pd.read_csv('data/wave_stations.csv', index_col=0)
 lats = np.load('data/visualization_example/lat.npy')
 lons = np.load('data/visualization_example/lon.npy')
 
-def create_vis(wave_data):
+def create_vis(wave_data, title='Wave Prediction', layers=None):
     """
     Create a plotly figure displaying the predicted wave data
 
     :param wave_data: the wave data as a (lat x lon x (u/v)) numpy array
+    :param layers: a list of the layers to include.
+        Possible values are: 'map', 'contour', 'direction', 'buoys'
     :returns: a plotly figure
     """
     wave_height = np.sqrt(np.sum(wave_data**2, axis=2))
@@ -22,13 +24,27 @@ def create_vis(wave_data):
     contour_trace = wave_contour(wave_height, lats, lons)
     quiver_trace = wave_quivers(wave_data / np.concatenate([wave_height[:,:,np.newaxis], wave_height[:,:,np.newaxis]], axis=2) / 2,
         lats, lons)
-    map_traces = get_map_traces(resolution='i')
-    fig = go.Figure(data=map_traces+[contour_trace, quiver_trace, buoy_trace])
-    fig.update_layout(title='Wave Prediction', mapbox_style='open-street-map')
+
+    if layers is None:
+        traces = map_traces + [contour_trace, quiver_trace, buoy_trace]
+    else:
+        traces = []
+        for layer in layers:
+            if layer == 'map':
+                traces.extend(map_traces)
+            elif layer == 'contour':
+                traces.append(contour_trace)
+            elif layer == 'direction':
+                traces.append(quiver_trace)
+            elif layer == 'buoys':
+                traces.append(buoy_trace)
+
+    fig = go.Figure(data=traces)
+    fig.update_layout(title=title, showlegend=False)
     fig.update_traces(marker=dict(size=20, color='MediumSeaGreen'), selector=dict(name='buoys'))
     fig.update_traces(line=dict(color='MediumSlateBlue'), selector=dict(name='directions'))
-    fig.update_xaxes(showgrid=False, visible=False, range=(16,34))
-    fig.update_yaxes(showgrid=False, visible=False, range=(59,66))
+    fig.update_xaxes(showgrid=False, visible=False)
+    fig.update_yaxes(showgrid=False, visible=False, scaleanchor='x', scaleratio=1)
     return fig
 
 def buoy_scatter(data):
@@ -134,6 +150,8 @@ def get_country_traces(m):
 def get_map_traces(**kwargs):
     m = Basemap(**kwargs)
     return get_coastline_traces(m) + get_country_traces(m)
+
+map_traces = get_map_traces(resolution='i', llcrnrlon=14, llcrnrlat=57, urcrnrlon=36, urcrnrlat=68) 
 
 if __name__ == '__main__':
     wind_data = np.load('data/visualization_example/wind_dat.npy')
