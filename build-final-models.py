@@ -27,8 +27,8 @@
 #
 #
 # ### Wave Direction Model
-# **Two SGDRegressors with 'huber' loss**
-# The SGDRegressor does not allow prediction of multiple variables at once, therefore there are two distinct models for direction prediction.
+# **RidgeRegression**
+# Ridge is used because it can predict the entire direction vector as one value.
 #
 # Inputs:
 # * 10u
@@ -46,7 +46,8 @@
 #
 #
 # Outputs:
-# * wave_u / wave_v
+# * wave_u
+# * wave_v
 
 
 # %%
@@ -58,7 +59,7 @@ import pandas as pd
 import plotly.express as px
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import SGDRegressor
+from sklearn.linear_model import SGDRegressor, RidgeCV
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import r2_score
 
@@ -174,7 +175,7 @@ with open('models/wave-height-model.pkl', 'wb') as f:
     pickle.dump(height_pipe, f)
 
 # %% [markdown]
-# ## Wave Direction Models
+# ## Wave Direction Model
 
 # %%
 # Build input and output matrices
@@ -183,7 +184,7 @@ input_vars = base_vars.copy()
 for l in [2, 4]:
     input_vars.extend([v + '_lag' + str(l) for v in base_vars])
 input_vars.sort()
-output_vars = ['wave_u']
+output_vars = ['wave_u', 'wave_v']
 
 test_dropped = test.dropna()
 X_test = test_dropped[input_vars].values
@@ -202,65 +203,25 @@ for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
 
 # %%
 # Train model
-u_pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
-u_pipe.fit(X_train, Y_train)
-print('Train accuracy of the model: {:.3f}'.format(u_pipe.score(X_train, Y_train)))
+alphas = np.logspace(-2, 5, num=20)
+dir_pipe = Pipeline([('scaler', StandardScaler()), ('regression', RidgeCV())])
+dir_pipe.fit(X_train, Y_train)
+print('Chosen regularization parameter: alpha={:.3f}'.format(dir_pipe.named_steps['regression'].alpha_))
+print('Train accuracy of the model: {:.3f}'.format(dir_pipe.score(X_train, Y_train)))
 
 # %%
 # Test model
-print('Test accuracy of the model: {:.3f}'.format(u_pipe.score(X_test, Y_test)))
-plot_prediction(u_pipe, X_test, Y_test)
+print('Test accuracy of the model: {:.3f}'.format(dir_pipe.score(X_test, Y_test)))
+plot_prediction(dir_pipe, X_test, Y_test, func=lambda x: np.sqrt(np.sum(x**2, axis=1)))
 
 # %%
-describe_regression(u_pipe, input_vars, output_vars)
-
-# %%
-# Save model
-with open('models/wave-u-model.pkl', 'wb') as f:
-    pickle.dump(u_pipe, f)
-
-# %%
-# Build input and output matrices
-base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
-input_vars = base_vars.copy()
-for l in [2, 4]:
-    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
-input_vars.sort()
-output_vars = ['wave_v']
-
-test_dropped = test.dropna()
-X_test = test_dropped[input_vars].values
-Y_test = test_dropped[output_vars].values
-
-X_train = None
-Y_train = None
-for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
-    buoy_dat = train[buoy].dropna()
-    if X_train is None:
-        X_train = buoy_dat[input_vars].values
-        Y_train = buoy_dat[output_vars].values
-    else:
-        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
-        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
-
-# %%
-# Train model
-v_pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
-v_pipe.fit(X_train, Y_train)
-print('Train accuracy of the model: {:.3f}'.format(v_pipe.score(X_train, Y_train)))
-
-# %%
-# Test model
-print('Test accuracy of the model: {:.3f}'.format(v_pipe.score(X_test, Y_test)))
-plot_prediction(v_pipe, X_test, Y_test)
-
-# %%
-describe_regression(v_pipe, input_vars, output_vars)
+# Model coefficiens
+describe_regression(dir_pipe, input_vars, output_vars)
 
 # %%
 # Save model
-with open('models/wave-v-model.pkl', 'wb') as f:
-    pickle.dump(v_pipe, f)
+with open('models/wave-dir-model.pkl', 'wb') as f:
+    pickle.dump(dir_pipe, f)
 
 # %% [markdown]
 # ## Test Performance of Combined Model
@@ -281,14 +242,11 @@ Y_test = test_dropped[output_vars].values
 # %%
 # Combine predictions
 height = height_pipe.predict(X_test)
-u = u_pipe.predict(X_test)
-v = v_pipe.predict(X_test)
+dir = dir_pipe.predict(X_test)
 
-scale_factor = height * np.sqrt(u**2 + v**2)
-u = u * scale_factor
-v = v * scale_factor
+scale_factor = height / np.sqrt((dir**2).sum(axis=1))
 
-pred = np.concatenate([u[:,np.newaxis], v[:,np.newaxis]], axis=1)
+pred = dir * np.concatenate([scale_factor[:,np.newaxis], scale_factor[:,np.newaxis]], axis=1)
 
 # %%
 # Test performance
