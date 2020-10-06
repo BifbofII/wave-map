@@ -20,17 +20,12 @@ conda install -n wave-map --file requirements.txt
 
 ### Data Download
 
-To download some data files that are in the `data` directory, Git LFS is needed.
-It can be setup according to this [Guide](https://git-lfs.github.com/).
-After installing Git LFS on a system, it needs to be initialized in the repository.
-This is done with the following command:
-```
-git lfs install
-```
+The big data file is not in Git LFS anymore because the Git LFS capacity of GitHub ran out.
+The Grib file can now be downloaded from [here](https://jabsserver.net/downloads/weather_data.grib) or with one of the following commands:
 
-If everything is set up, the data files can be downloaded with:
 ```
-git lfs pull
+curl https://jabsserver.net/downloads/weather_data.grib > data/weather_data.grib
+wget --show-progress -o=data/weather_data.grib https://jabsserver.net/downloads/weather_data.grib
 ```
 
 ## Project Proposal
