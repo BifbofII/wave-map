@@ -786,8 +786,7 @@ for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
 #
 #
 # Outputs:
-# * wave_u
-# * wave_v
+# * wave_height
 
 # %%
 # Build input and output matrices
@@ -830,7 +829,7 @@ plot_prediction(pipe, X_test, Y_test)
 describe_regression(pipe, input_vars, output_vars)
 
 # %% [markdown]
-# ## SDG Regressor - Huber Loss - Wave height only
+# ## SGD Regressor - Huber Loss - Wave height only
 # Try another loss function.
 #
 # Inputs:
@@ -849,8 +848,7 @@ describe_regression(pipe, input_vars, output_vars)
 #
 #
 # Outputs:
-# * wave_u
-# * wave_v
+# * wave_height
 
 # %%
 # Build input and output matrices
@@ -860,6 +858,126 @@ for l in [2, 4]:
     input_vars.extend([v + '_lag' + str(l) for v in base_vars])
 input_vars.sort()
 output_vars = ['Wave height (m)']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test)
+
+# %%
+describe_regression(pipe, input_vars, output_vars)
+
+# %% [markdown]
+# ## SGD Regressor - Huber Loss - Wave U
+# First part of SGD model for direction
+#
+# Inputs:
+# * 10u
+# * 10v
+# * wind_speed
+# * wind_speed_sq
+# * 10u_lag2
+# * 10v_lag2
+# * wind_speed_lag2
+# * wind_speed_sq_lag2
+# * 10u_lag4
+# * 10v_lag4
+# * wind_speed_lag4
+# * wind_speed_sq_lag4
+#
+#
+# Outputs:
+# * wave_u
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test)
+
+# %%
+describe_regression(pipe, input_vars, output_vars)
+
+# %% [markdown]
+# ## SGD Regressor - Huber Loss - Wave V
+# First part of SGD model for direction
+#
+# Inputs:
+# * 10u
+# * 10v
+# * wind_speed
+# * wind_speed_sq
+# * 10u_lag2
+# * 10v_lag2
+# * wind_speed_lag2
+# * wind_speed_sq_lag2
+# * 10u_lag4
+# * 10v_lag4
+# * wind_speed_lag4
+# * wind_speed_sq_lag4
+#
+#
+# Outputs:
+# * wave_v
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_v']
 
 test_dropped = test.dropna()
 X_test = test_dropped[input_vars].values

@@ -23,12 +23,31 @@
 #
 #
 # Outputs:
-# * wave_u
-# * wave_v
+# * wave_height
 #
 #
 # ### Wave Direction Model
-# Tbd
+# **Two SGDRegressors with 'huber' loss**
+# The SGDRegressor does not allow prediction of multiple variables at once, therefore there are two distinct models for direction prediction.
+#
+# Inputs:
+# * 10u
+# * 10v
+# * wind_speed
+# * wind_speed_sq
+# * 10u_lag2
+# * 10v_lag2
+# * wind_speed_lag2
+# * wind_speed_sq_lag2
+# * 10u_lag4
+# * 10v_lag4
+# * wind_speed_lag4
+# * wind_speed_sq_lag4
+#
+#
+# Outputs:
+# * wave_u / wave_v
+
 
 # %%
 import datetime
@@ -151,4 +170,93 @@ describe_regression(pipe, input_vars, output_vars)
 # %%
 # Save model
 with open('models/wave-height-model.pkl', 'wb') as f:
+    pickle.dump(pipe, f)
+
+# %% [markdown]
+# ## Wave Direction Models
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_u']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test)
+
+# %%
+describe_regression(pipe, input_vars, output_vars)
+
+# %%
+# Save model
+with open('models/wave-u-model.pkl', 'wb') as f:
+    pickle.dump(pipe, f)
+
+# %%
+# Build input and output matrices
+base_vars = ['10u', '10v', 'wind_speed', 'wind_speed_sq']
+input_vars = base_vars.copy()
+for l in [2, 4]:
+    input_vars.extend([v + '_lag' + str(l) for v in base_vars])
+input_vars.sort()
+output_vars = ['wave_v']
+
+test_dropped = test.dropna()
+X_test = test_dropped[input_vars].values
+Y_test = test_dropped[output_vars].values
+
+X_train = None
+Y_train = None
+for i, buoy in enumerate(train.columns.levels[0].drop(test_buoy)):
+    buoy_dat = train[buoy].dropna()
+    if X_train is None:
+        X_train = buoy_dat[input_vars].values
+        Y_train = buoy_dat[output_vars].values
+    else:
+        X_train = np.concatenate([X_train, buoy_dat[input_vars].values])
+        Y_train = np.concatenate([Y_train, buoy_dat[output_vars].values])
+
+# %%
+# Train model
+pipe = Pipeline([('scaler', StandardScaler()), ('regression', SGDRegressor(loss='huber'))])
+pipe.fit(X_train, Y_train)
+print('Train accuracy of the model: {:.3f}'.format(pipe.score(X_train, Y_train)))
+
+# %%
+# Test model
+print('Test accuracy of the model: {:.3f}'.format(pipe.score(X_test, Y_test)))
+plot_prediction(pipe, X_test, Y_test)
+
+# %%
+describe_regression(pipe, input_vars, output_vars)
+
+# %%
+# Save model
+with open('models/wave-v-model.pkl', 'wb') as f:
     pickle.dump(pipe, f)
