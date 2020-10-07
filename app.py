@@ -11,7 +11,9 @@ from dash.dependencies import Input, Output
 app = dash.Dash('baltic-wave-map')
 server = app.server
 
-wind_data = np.load('data/visualization_example/wind_dat.npy')
+wave_data = np.load('predictions/wave_data.npy')
+wind_data = np.load('predictions/wind_data.npy')
+times = np.load('predictions/times.npy', allow_pickle=True)
 
 colours = dict(
     bg_1 = '#061233',
@@ -72,10 +74,10 @@ app.layout = html.Div([
                         html.Div(id='time_sel', children=[
                             html.H3('Time Selection'),
                             dcc.DatePickerSingle(id='sel_date',
-                                min_date_allowed=datetime.date(2020, 8, 1),
-                                max_date_allowed=datetime.date(2020, 8, 7),
-                                initial_visible_month=datetime.date(2020, 8, 5),
-                                date=datetime.date(2020, 8, 1),
+                                min_date_allowed=times.min().date(),
+                                max_date_allowed=times.max().date(),
+                                initial_visible_month=times.min().date(),
+                                date=times.min().date(),
                                 display_format='DD.MM.YYYY'
                             ),
                             html.Div(
@@ -86,7 +88,8 @@ app.layout = html.Div([
                                         max=23,
                                         value=0,
                                         step=None,
-                                        marks={i:'{}:00'.format(i) for i in range(0,24,4)}
+                                        marks={int(i): '{}:00'.format(i)
+                                            for i in np.unique([d.hour for d in times])},
                                     ),
                                 ]
                             ),
@@ -136,13 +139,21 @@ app.layout = html.Div([
 )
 def update_graph(plot_sel, date_sel, time_sel, layer_sel):
     """Dash callback function"""
+    time_ind = np.argmin([np.abs(t.total_seconds()) for t in
+        times - (datetime.datetime.strptime(date_sel, '%Y-%m-%d') + datetime.timedelta(hours=time_sel))])
     if plot_sel == 'waves':
         title = 'Wave Prediction'
+        data = wave_data[:,:,time_ind,:]
+        mask = True
+        cname = 'Wave height / m'
     elif plot_sel == 'wind':
         title = 'Wind Data'
+        data = wind_data[:,:,time_ind,:]
+        mask = False
+        cname = 'Wind speed / m/s'
 
-    fig = visualization.create_vis(wind_data, layers=layer_sel)
-    fig.update_layout(paper_bgcolor='#061233', font_color=colours['text'])
+    fig = visualization.create_vis(data, layers=layer_sel, mask_land=mask, contour_name=cname)
+    fig.update_layout(paper_bgcolor=colours['bg_2'], font_color=colours['text'])
 
     return fig, title
 

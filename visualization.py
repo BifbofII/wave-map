@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from memoization import cached
 
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -7,21 +8,27 @@ import plotly.figure_factory as ff
 from mpl_toolkits.basemap import Basemap
 
 buoy_data = pd.read_csv('data/wave_stations.csv', index_col=0)
-lats = np.load('data/visualization_example/lat.npy')
-lons = np.load('data/visualization_example/lon.npy')
+lats = np.load('predictions/lats.npy')
+lons = np.load('predictions/lons.npy')
 
-def create_vis(wave_data, title=None, layers=None):
+mask = np.load('data/vis_mask.npy')
+
+@cached
+def create_vis(wave_data, title=None, layers=None, mask_land=True, contour_name=None):
     """
     Create a plotly figure displaying the predicted wave data
 
     :param wave_data: the wave data as a (lat x lon x (u/v)) numpy array
     :param layers: a list of the layers to include.
         Possible values are: 'map', 'contour', 'direction', 'buoys'
+    :param mask_land: whether to mask the land area or not
     :returns: a plotly figure
     """
+    if mask_land:
+        wave_data[mask,:] = np.nan
     wave_height = np.sqrt(np.sum(wave_data**2, axis=2))
     buoy_trace = buoy_scatter(buoy_data)
-    contour_trace = wave_contour(wave_height, lats, lons)
+    contour_trace = wave_contour(wave_height, lats, lons, contour_name)
     quiver_trace = wave_quivers(wave_data / np.concatenate([wave_height[:,:,np.newaxis], wave_height[:,:,np.newaxis]], axis=2) / 2,
         lats, lons)
 
@@ -59,7 +66,7 @@ def buoy_scatter(data):
     hover_text = data['Observation station']
     return go.Scatter(x=lon, y=lat, hovertext=hover_text, name='buoys', mode='markers')
 
-def wave_contour(data, lats, lons):
+def wave_contour(data, lats, lons, contour_name):
     """
     Create a plotly contour trace of the wave height
 
@@ -68,7 +75,8 @@ def wave_contour(data, lats, lons):
     :param lons: a 1D numpy array of longitude values
     :returns a plotly trace instance
     """
-    return go.Contour(x=lons, y=lats, z=data, opacity=0.5, name='wave-contour')
+    return go.Contour(x=lons, y=lats, z=data, opacity=0.5, name='wave-contour',
+        colorbar={'title': contour_name})
 
 def wave_quivers(data, lats, lons):
     """
