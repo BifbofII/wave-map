@@ -170,9 +170,51 @@ fig.show()
 # %%
 # Plot wave height vs. wind speed
 fig = suomenlahti.plot(x='wind_speed', y='wave_height', kind='scatter')
+fig.update_layout(title='Correlation Wind Speed and Wave Height (Suomenlahti)')
 fig.show()
 
 # %%
-# Plot wave height vs. wind speed
+# Plot wave dir vs. wind dir
 fig = suomenlahti.plot(x='wind_dir', y='wave_dir', kind='scatter')
+fig.update_layout(title='Correlation Wind Direction and Wave Direction (Suomenlahti)')
+fig.show()
+
+# %%
+# Plot wave height vs. wind speed (all buoys)
+join = pd.concat([wind_speed, wave_height], axis=1, join='inner')
+join = join.dropna()
+x = join.iloc[:,:5].values.flatten()
+y = join.iloc[:,5:].values.flatten()
+fig = px.scatter(x=x, y=y)
+fig.update_layout(title='Correlation Wind Speed and Wave Height')
+fig.update_xaxes(title='wind speed / m/s')
+fig.update_yaxes(title='wave height / m')
+fig.show()
+
+# %%
+# Plot wave dir vs. wind dir (all buoys)
+join = pd.concat([wind_dir, wave_dir], axis=1, join='inner')
+join = join.dropna()
+x = join.iloc[:,:5].values.flatten()
+y = join.iloc[:,5:].values.flatten()
+fig = px.scatter(x=x, y=y)
+fig.update_layout(title='Correlation Wind Direction and Wave Direction')
+fig.update_xaxes(title='wind direction / deg')
+fig.update_yaxes(title='wave direction / deg')
+fig.show()
+
+# %%
+# Plot wave direction distribution
+no_nan_wave_dir = wave_dir.dropna()
+fig = ff.create_distplot([no_nan_wave_dir[c].values for c in wave_dir], wave_dir.columns, bin_size=2)
+fig.update_layout(title='Distribution of wave direction per buoy')
+fig.update_xaxes(title='wave direction / deg')
+fig.show()
+
+# %%
+# Plot wind direction distribution
+no_nan_wind_dir = wind_dir.dropna()
+fig = ff.create_distplot([no_nan_wind_dir[c].values for c in wind_dir], wind_dir.columns, bin_size=2)
+fig.update_layout(title='Distribution of wind direction per buoy')
+fig.update_xaxes(title='wind direction / deg')
 fig.show()
