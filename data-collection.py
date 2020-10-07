@@ -200,4 +200,17 @@ np.save('data/visualization_example/lon.npy', lon)
 np.save('data/visualization_example/wind_dat.npy', dat)
 
 # %%
+# Save wind data for vis
+time = [datetime.datetime(2020, 8, d, h) for d in range(1,8) for h in range(0,24,4)]
+wind_data = np.zeros((len(lat), len(lon), len(time), 2))
+for i, t in enumerate(time):
+    u_msg = grbs.select(shortName='10u', year=t.year, month=t.month, day=t.day, hour=t.hour)[0]
+    v_msg = grbs.select(shortName='10v', year=t.year, month=t.month, day=t.day, hour=t.hour)[0]
+    wind_data[:,:,i,0] = u_msg.values
+    wind_data[:,:,i,1] = v_msg.values
+
+# %%
+np.save('predictions/wind_data.npy', wind_data)
+
+# %%
 grbs.close()
