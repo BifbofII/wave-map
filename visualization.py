@@ -6,8 +6,6 @@ from memoization import cached
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
-from mpl_toolkits.basemap import Basemap
-
 buoy_data = pd.read_csv('data/wave_stations.csv', index_col=0)
 lats = np.load('predictions/lats.npy')
 lons = np.load('predictions/lons.npy')
