@@ -10,7 +10,7 @@ buoy_data = pd.read_csv('data/wave_stations.csv', index_col=0)
 lats = np.load('data/visualization_example/lat.npy')
 lons = np.load('data/visualization_example/lon.npy')
 
-def create_vis(wave_data, title='Wave Prediction', layers=None):
+def create_vis(wave_data, title=None, layers=None):
     """
     Create a plotly figure displaying the predicted wave data
 
@@ -40,7 +40,7 @@ def create_vis(wave_data, title='Wave Prediction', layers=None):
                 traces.append(buoy_trace)
 
     fig = go.Figure(data=traces)
-    fig.update_layout(title=title, showlegend=False)
+    fig.update_layout(title=title, showlegend=False, margin=dict(l=0, r=0, b=0, t=0 if title is None else 50))
     fig.update_traces(marker=dict(size=20, color='MediumSeaGreen'), selector=dict(name='buoys'))
     fig.update_traces(line=dict(color='MediumSlateBlue'), selector=dict(name='directions'))
     fig.update_xaxes(showgrid=False, visible=False)
