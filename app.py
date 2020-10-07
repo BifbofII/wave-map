@@ -139,15 +139,15 @@ app.layout = html.Div([
 )
 def update_graph(plot_sel, date_sel, time_sel, layer_sel):
     """Dash callback function"""
-    time_ind = np.argmin([np.abs(t.total_seconds()) for t in
-        times - (datetime.datetime.strptime(date_sel, '%Y-%m-%d') + datetime.timedelta(hours=time_sel))])
+    time = datetime.datetime.strptime(date_sel, '%Y-%m-%d') + datetime.timedelta(hours=time_sel)
+    time_ind = np.argmin([np.abs(t.total_seconds()) for t in times - time])
     if plot_sel == 'waves':
-        title = 'Wave Prediction'
+        title = 'Wave Prediction - ' + time.strftime('%d.%m.%Y %H:%M')
         data = wave_data[:,:,time_ind,:]
         mask = True
         cname = 'Wave height / m'
     elif plot_sel == 'wind':
-        title = 'Wind Data'
+        title = 'Wind Data - ' + time.strftime('%d.%m.%Y %H:%M')
         data = wind_data[:,:,time_ind,:]
         mask = False
         cname = 'Wind speed / m/s'
