@@ -8,6 +8,7 @@ A mini-project for the lecture _Introduction to Data Science_.
   * [Project Proposal](#project-proposal)
   * [Directories](#directories)
   * [Explatory data analysis](#explatory-data-analysis)
+  * [Model building](#model-building)
 
 ## Development Setup
 
@@ -120,5 +121,17 @@ To see if there is any idea predict wave hight and direction from wind data the 
 ![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/Correlation_Wind_Speed_and_Wave_Height_(Suomenlahti).png)
 
 So from these plots one can see that there is probably correlation with the wind speed and wave hight. 
+
+## Model building
+
+Multiple test was ran in order to look for the best model. Here is the list of tested models used in `build-model.ipynb`. Here is provided a short description and the result. Wider explanation/description can be found from the mentioned file `build-model.ipynb`. 
+
+The data used for the models was from bouy `Pohjois-itämeri` because it had the least missing values so it had the most data to work with to get as good models as possible.
+
+#### Simple Linear Regression
+ * Linear regression from Wind Vector, Temperature and Pressure to Wave Vector. No Temporal Information.
+ * `Train accuracy of the model: 0.595`
+ * `Test accuracy of the model: 0.556`
+
 
 
