@@ -6,6 +6,7 @@ A mini-project for the lecture _Introduction to Data Science_.
   * [Development Setup](#development-setup)
   * [Data Download](#data-download)
   * [Project Proposal](#project-proposal)
+  * [Directories](#directories)
 
 ## Development Setup
 
@@ -76,3 +77,13 @@ Preferably we could have a map of coast of Finland and representing the wave hig
 
 The added value would ne from users point, that the sites of Ilmatieteenlaitos has only wave prediction from the four buoys, but not from the whole coast.
 This way we could provide useful data for much wider audience of sailors and other seafarers.
+
+## Directories
+
+| Direcotry     |  Description                                                         |
+|---------------|----------------------------------------------------------------------|
+| assets        | css file for the webpage                                             |
+| data          | data files used in for the models, visualization                     |
+| documentation | plots and figures from the project                                   |
+| models        | the resulting model from the data analysis used for the predictions  |
+| predictions   | predicted data from the model used for the visualization             |
