@@ -91,6 +91,19 @@ This way we could provide useful data for much wider audience of sailors and oth
 
 ## Explatory data analysis
 
+### Wave data
+
 A large amount of time for any data analysist goes into digging through the data and getting the grip of it. The explatory data analysis has been done in `Explatory-data-analysis.ipynb`. The data we collected/used are the weather data from the grib files and the data from wave bouys in `wave_data.csv`. First thing with the wave data was it that a large part of the data was missing of it. 
 
 ![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/missing_values.png)
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/kaikki.png)
+
+(Wave bouys shown as orange dots and coast weather stations shown as red dots)
+
+Large parts of bouys from Perämeri and Helsinki-Suomenlinna was missing. Perämeri is the Northest bouy and Helsinki-Suomenlinna is the bouy in waters of Helsinki closer to the coast. One can see that the missing data is timed during the winter. This is due to the fact that the bouys are picked up if there is risk for the to get caught in the freexing sea. In north where the sea has the longest period of freezed sea has the longest period of missing data (Perämeri) and Helsinki-Suomenlinna which is the bouys closest to the coast has the second longest period of missing data.
+
+Some explatory analysis of the wave hight and direction was also made.
+
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/wave_hight_and_dir1_9-20.png)
+
+It has one wave hight and direction arrow per day. More of the explatory plots can be found from `documentation/plots`.
