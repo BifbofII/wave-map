@@ -107,3 +107,18 @@ Some explatory analysis of the wave hight and direction was also made.
 ![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/wave_hight_and_dir1_9-20.png)
 
 It has one wave hight and direction arrow per day. More of the explatory plots can be found from `documentation/plots`.
+
+### Wind/weather data
+
+Quick quiver plot for the wind data for the selected region to see how to parse the grib file. The grib file doesn't have any missing values and they are made from already measured data which is then turned into grib files according to real weather models.
+
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/quiver_plot.png)
+
+To see if there is any idea predict wave hight and direction from wind data the following analysis was done to see if there is any correlation.
+
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/wind_speed_wave_hight_19-20.png)
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/Correlation_Wind_Speed_and_Wave_Height_(Suomenlahti).png)
+
+So from these plots one can see that there is probably correlation with the wind speed and wave hight. 
+
+
