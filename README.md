@@ -2,6 +2,8 @@
 
 A mini-project for the lecture _Introduction to Data Science_.
 
+Final result can be found from here: http://baltic-wave-map.herokuapp.com/
+
 ## TOC
   * [Development Setup](#development-setup)
   * [Data Download](#data-download)
@@ -10,6 +12,7 @@ A mini-project for the lecture _Introduction to Data Science_.
   * [Explatory data analysis](#explatory-data-analysis)
   * [Model building](#model-building)
   * [Final model](#final-model)
+  * [Visualization](#visualization)
 
 ## Development Setup
 
@@ -152,3 +155,7 @@ There are two distinct models, one predicting the wave height and one predicting
 
 Description of inputs and how the model is used in can be found in file `build-final-model`
  
+ 
+## Visualization
+
+
