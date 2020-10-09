@@ -9,6 +9,7 @@ A mini-project for the lecture _Introduction to Data Science_.
   * [Directories](#directories)
   * [Explatory data analysis](#explatory-data-analysis)
   * [Model building](#model-building)
+  * [Final model](#final-model)
 
 ## Development Setup
 
@@ -135,3 +136,19 @@ The data used for the models was from bouy `Pohjois-itämeri` because it had the
  * Support vector Machine
 
  There wasn't that much difference between the models, but Ridge Regression - Wind Only - More Features seemed to get the best test accuracy of 0.627.
+ 
+ ## Final model
+ 
+There are two distinct models, one predicting the wave height and one predicting the direction. This approach is chosen because the wave height has a stronger correlation and this way the height prediction is better since it is not influenced by the direction.
+
+#### Wave Height Model
+ * `SGDRegression with 'huber' loss**` was used for predicting wave hight
+ * Output: `wave_height`
+ 
+#### Wave Direction Model
+ * `Ridge regression` was used for predicting wind direction
+ * Ridge is used because it can predict the entire direction vector as one value.
+ * Output: `wave_u`,`wave_v`
+
+Description of inputs and how the model is used in can be found in file `build-final-model`
+ 
