@@ -124,70 +124,14 @@ So from these plots one can see that there is probably correlation with the wind
 
 ## Model building
 
-Multiple test was ran in order to look for the best model. Here is the list of tested models used in `build-model.ipynb`. Here is provided a short description and the result. Wider explanation/description can be found from the mentioned file `build-model.ipynb`. 
+Multiple test was ran in order to look for the best model. Here is the list of tested models used in `build-model.ipynb`. Wider explanation/description can be found from the mentioned file `build-model.ipynb`. 
 
 The data used for the models was from bouy `Pohjois-itämeri` because it had the least missing values so it had the most data to work with to get as good models as possible.
 
-#### 1. Simple Linear Regression
- * Linear regression from Wind Vector, Temperature and Pressure to Wave Vector. No Temporal Information.
- * `Train accuracy of the model: 0.595`
- * `Test accuracy of the model: 0.556`
+### Models
+ * Simple Linear Regression
+ * Ridge Regression
+ * Lasso Regression
+ * Support vector Machine
 
-#### 2. Linear Regression with older inputs
- * Linear regression from Wind Vector, Temperature and Pressure to Wave Vector. Each input variable is used four times, once with the current value, once lagging one hour and so on.
- * `Train accuracy of the model: 0.641`
- * `Test accuracy of the model: 0.604`
- 
-#### 3. Linear Regression with even older inputs
- * Linear regression from Wind Vector, Temperature and Pressure to Wave Vector. Each input variable is used nine times, once with the current value, once lagging one hour and so on. The goal here is to see how old the variables with the strongest correlation are.
- * `Train accuracy of the model: 0.655`
- * `Test accuracy of the model: 0.622`
-  
-#### 4. Ridge Regression
- * Ridge regression from Wind Vector, Temperature and Pressure to Wave Vector. Each input variable is used nine times, once with the current value, once lagging one hour and so on. The goal here is to see how old the variables with the strongest correlation are.
- * `Chosen regularization parameter: alpha=10.000`
- * `Train accuracy of the model: 0.655`
- * `Test accuracy of the model: 0.622`
-
-#### 5. Lasso Regression
- * Lasso Regression for selecting important variables.
- * `Chosen regularization parameter: alpha=0.010`
- * `Train accuracy of the model: 0.653`
- * `Test accuracy of the model: 0.614`
-   
-#### 6. Lasso Regression - Wind Only
- * Lasso Regression for selecting which wind lag is important.
- * `Chosen regularization parameter: alpha=0.010`
- * `Train accuracy of the model: 0.648`
- * `Test accuracy of the model: 0.610`
-   
-#### 7. Lasso Regression - Wind Only - More Lag
- * Lasso Regression for selecting which wind lag is important.
- * `Chosen regularization parameter: alpha=0.010`
- * `Train accuracy of the model: 0.649`
- * `Test accuracy of the model: 0.611`
-   
-#### 8. Ridge Regression - Wind only
- * Ridge regression from Wind Vector, Wind Speed and Wind Speed Squared Lag for 2 hours and 4 hours.
- * `Chosen regularization parameter: alpha=10.000`
- * `Train accuracy of the model: 0.640`
- * `Test accuracy of the model: 0.603`
-   
-#### 9. Ridge Regression - Wind only - More Features
- * Ridge regression from Wind Vector, Wind Speed and Wind Speed Squared Lag for 2 hours and 4 hours.
- * `Chosen regularization parameter: alpha=10.000`
- * `Train accuracy of the model: 0.659`
- * `Test accuracy of the model: 0.627`
- 
-#### 10. Support Vector Machine
- * Support vector regression from Wind Vector, Wind Speed and Wind Speed Squared Lag for 2 hours and 4 hours
- * `Support vector regression from Wind Vector, Wind Speed and Wind Speed Squared Lag for 2 hours and 4 hours`
- * `Chosen regularization parameter (v): C=1.000`
- * `Train accuracy of the model (u): 0.654`
- * `Train accuracy of the model (v): 0.610`
- 
- * `Test accuracy of the model (u): 0.684`
- * `Test accuracy of the model (v): 0.537`
-
-  
- 
+ There wasn't that much difference between the models, but Ridge Regression - Wind Only - More Features seemed to get the best test accuracy of 0.627.
