@@ -2,6 +2,9 @@
 
 A mini-project for the lecture _Introduction to Data Science_.
 
+## TOC
+  * [Development Setup](#development-setup)
+
 ## Development Setup
 
 Run the following commands from the root of the project for setting up a python virtual environment, enabling it and installing all dependencies:
