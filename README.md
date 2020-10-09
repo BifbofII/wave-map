@@ -4,6 +4,8 @@ A mini-project for the lecture _Introduction to Data Science_.
 
 ## TOC
   * [Development Setup](#development-setup)
+  * [Data Download](#data-download)
+  * [Project Proposal](#project-proposal)
 
 ## Development Setup
 
