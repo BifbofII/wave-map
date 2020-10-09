@@ -32,6 +32,24 @@ The Grib file can now be downloaded from [here](https://jabsserver.net/downloads
 curl https://jabsserver.net/downloads/weather_data.grib > data/weather_data.grib
 wget --show-progress -P data https://jabsserver.net/downloads/weather_data.grib
 ```
+##### weather_data.grib
+
+It contains wind speed and direction, temperature (2m) and surface pressure data for the are from 16-34 degrees longitude and 59-66 degrees latitude.
+The data is hourly for a timeframe of 01.01.2019 to the 16.09.2020.
+
+##### weather_data.csv
+
+The file contains weather data at the buoy locations.
+This data was extracted from the Grib file.
+
+##### wave_data.csv
+
+The `fmi-download` folder contains CSV files that were downloaded from the web interface to FMIs API [here](https://en.ilmatieteenlaitos.fi/download-observations).
+The CSV files were then cleaned up and joined together and exported as `wave_data.csv`.
+Additional metadata about the wave buoys can be found in `wave_stations.csv`.
+
+
+
 
 ## Project Proposal
 
