@@ -7,6 +7,7 @@ A mini-project for the lecture _Introduction to Data Science_.
   * [Data Download](#data-download)
   * [Project Proposal](#project-proposal)
   * [Directories](#directories)
+  * [Explatory data analysis](#explatory-data-analysis)
 
 ## Development Setup
 
@@ -87,3 +88,9 @@ This way we could provide useful data for much wider audience of sailors and oth
 | documentation | plots and figures from the project                                   |
 | models        | the resulting model from the data analysis used for the predictions  |
 | predictions   | predicted data from the model used for the visualization             |
+
+## Explatory data analysis
+
+A large amount of time for any data analysist goes into digging through the data and getting the grip of it. The explatory data analysis has been done in `Explatory-data-analysis.ipynb`. The data we collected/used are the weather data from the grib files and the data from wave bouys in `wave_data.csv`. First thing with the wave data was it that a large part of the data was missing of it. 
+
+![](https://github.com/BifbofII/wave-map/blob/master/documentation/plots/missing_values.png)
