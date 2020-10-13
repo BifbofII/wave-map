@@ -1,3 +1,9 @@
+"""
+Parsing utilities for data from a WFS server to pandas Dataframes
+
+This module is not used anymore, since the wave data was downloaded as CSVs.
+"""
+
 import os.path
 import dateutil.parser
 import numpy as np

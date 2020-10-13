@@ -1,3 +1,9 @@
+"""
+Wrapper module for predictors that are easier to use
+
+Some wrapping classes that combine a model and its data pre-/postprocessing.
+"""
+
 import pickle
 import pygrib
 import datetime

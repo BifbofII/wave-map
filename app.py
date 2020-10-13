@@ -1,3 +1,10 @@
+"""
+Plotly Dash App Script
+
+This script contains the Plotly Dash application running at baltic-wave-map.herokuapp.com
+All the layout and styling of the application is done here, while the plotting of the data happens in a different module.
+"""
+
 import visualization
 
 import datetime

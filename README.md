@@ -20,14 +20,14 @@ Run the following commands from the root of the project for setting up a python 
 ```
 python3 -m venv .venv
 source ./.venv/bin/activate
-pip install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
 
 Alternatively, tun the following commands to setup an anaconda environment for the project:
 ```
 conda create -n wave-map python=3.6 anaconda
 conda activate wave-map
-conda install -n wave-map --file requirements.txt
+conda install -n wave-map --file dev-requirements.txt
 ```
 
 ### Data Download

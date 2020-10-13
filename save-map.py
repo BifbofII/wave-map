@@ -1,3 +1,9 @@
+"""
+Script to save the basemap into a file
+
+This is used so that the mpl_toolkit.basemap module does not need to be installed in Heroku.
+"""
+
 import pickle
 import numpy as np
 import plotly.graph_objects as go

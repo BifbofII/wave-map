@@ -1,3 +1,9 @@
+"""
+Module doing all the visualization
+
+This module contains a master function to create the visualizations for the Web App.
+"""
+
 import pickle
 import numpy as np
 import pandas as pd
