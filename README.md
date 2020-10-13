@@ -173,4 +173,11 @@ More detailed descriptions of the inputs and how the model is used in can be fou
  
 ## Visualization
 
+The data visualization is done with the help of Plotly for generating the plots and Plotly Dash for creating a web application.
+Since this is a proof of concept project, the web application does only show precomputed data for the week from the 01.08.2020 to the 08.08.2020.
 
+The web app is build in `app.py`.
+It includes controls for selecting the date and the data that should be shown.
+Based on that, the data is selected, passed to the `create_vis` function from the `visualization.py` module and the returned plot is included in the Dash application.
+
+The finished application is hosted on Heroku to create a deliverable demo application.
