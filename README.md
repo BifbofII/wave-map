@@ -5,14 +5,14 @@ A mini-project for the lecture _Introduction to Data Science_.
 Final result can be found from here: http://baltic-wave-map.herokuapp.com/
 
 ## TOC
-  * [Development Setup](#development-setup)
-    - [Data Download](#data-download)
-  * [Project Proposal](#project-proposal)
-  * [Directories](#directories)
-  * [Exploratory data analysis](#explatory-data-analysis)
-  * [Model building](#model-building)
-  * [Final model](#final-model)
-  * [Visualization](#visualization)
+* [Development Setup](#development-setup)
+  - [Data Download](#data-download)
+* [Project Proposal](#project-proposal)
+* [Directories](#directories)
+* [Exploratory data analysis](#explatory-data-analysis)
+* [Model building](#model-building)
+* [Final model](#final-model)
+* [Visualization](#visualization)
 
 ## Development Setup
 
@@ -135,33 +135,41 @@ So from these plots one can see that there is probably correlation between the w
 
 ## Model building
 
-Multiple test was ran in order to look for the best model. Here is the list of tested models used in `build-model.ipynb`. Wider explanation/description can be found from the mentioned file `build-model.ipynb`. 
+Multiple test were ran in order to find the best model.
+Here is the list of tested models used in `build-model.ipynb`.
+More detailed explanation of the reasoning behind the models can be found from the mentioned file `build-model.ipynb`. 
 
-The data used for the models was from buoy `Pohjois-itämeri` because it had the least missing values so it had the most data to work with to get as good models as possible.
+All models were trained on data from four of the buoys and tested on the fifth (`Pohjois-itämeri`).
 
 ### Models
- * Simple Linear Regression
- * Ridge Regression
- * Lasso Regression
- * Support vector Machine
+* Linear Regression
+* Ridge Regression
+* Lasso Regression (For variable selection)
+* Support vector Machine
+* SGD Regression
 
- There wasn't that much difference between the models, but "Ridge Regression - Wind Only - More Features" seemed to get the best test accuracy of 0.627.
+All models were tested with different parameters (if applicable) and with different variables as inputs.
+The R2-score for the models ranges between 0.535 to 0.738.
  
- ## Final model
- 
-There are two distinct models, one predicting the wave height and one predicting the direction. This approach is chosen because the wave height has a stronger correlation and this way the height prediction is better since it is not influenced by the direction.
+## Final model
+There are two distinct models, one predicting the wave height and one predicting the direction.
+This approach is chosen because the wave height has a stronger correlation and this way the height prediction is better since it is not influenced by the direction.
+
+All direction data is handled as vectors instead of degree values to get continuous data without a jump from 360 to 0 degrees.
 
 #### Wave Height Model
- * `SGDRegression with 'huber' loss**` was used for predicting wave height
- * Output: `wave_height`
+* **`SGDRegression` with 'huber' loss** was used for predicting wave height
+* Output: wave height
+* Inputs: wind direction (as vector components), wind speed and squared wind speed of the last 4 hours
  
 #### Wave Direction Model
- * `Ridge regression` was used for predicting wind direction
- * Ridge is used because it can predict the entire direction vector as one value.
- * Output: `wave_u`, `wave_v`
+* `RidgeRegression` was used for predicting wind direction
+* Ridge is used because it can predict both vector components at once
+* Cross validation is used to fix the regularization parameter
+* Output: wave direction (as vector components)
+* Inputs: wind direction, wind speed and squared wind speed of the last 4 hours
 
-Description of inputs and how the model is used in can be found in file `build-final-model`
- 
+More detailed descriptions of the inputs and how the model is used in can be found in file `build-final-model.ipynb`.
  
 ## Visualization
 
