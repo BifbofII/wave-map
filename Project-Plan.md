@@ -5,12 +5,13 @@
 * [x] Download wave data
 * [x] Download weather data
   * [x] Check format
-* [ ] Build model
-  * [ ] Decide on model
-* [ ] Visualize data
-  * [ ] Coastal map
-  * [ ] Visualize Buoys
-  * [ ] Visualize predicted data
+* [x] Build model
+  * [x] Decide on model
+* [x] Visualize data
+  * [x] Coastal map
+  * [x] Visualize Buoys
+  * [x] Visualize predicted data
+* [x] Web Application
 
 ## Project Stages
 
