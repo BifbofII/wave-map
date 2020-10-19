@@ -181,3 +181,4 @@ It includes controls for selecting the date and the data that should be shown.
 Based on that, the data is selected, passed to the `create_vis` function from the `visualization.py` module and the returned plot is included in the Dash application.
 
 The finished application is hosted on Heroku to create a deliverable demo application.
+It can be found [here](https://baltic-wave-map.herokuapp.com/).
