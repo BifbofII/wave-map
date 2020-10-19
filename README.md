@@ -4,6 +4,8 @@ A mini-project for the lecture _Introduction to Data Science_.
 
 Final result can be found from here: http://baltic-wave-map.herokuapp.com/
 
+Christoph Jabs, Anniina Kinnunen, Mikael De Meulder
+
 ## TOC
 * [Development Setup](#development-setup)
   - [Data Download](#data-download)
